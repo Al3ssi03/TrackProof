@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: trackproof-postgres
+    environment:
+      POSTGRES_USER: trackproof
+      POSTGRES_PASSWORD: trackproof
+      POSTGRES_DB: trackproof
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trackproof -d trackproof"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
