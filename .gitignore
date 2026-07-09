@@ -1,0 +1,23 @@
+# Claude Code local settings
+.claude/settings.local.json
+.claude/settings.local.json.tmp.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Ambiente e segreti
+.env
+.env.*
+!.env.example
+
+# Audio temporaneo (scaricato/caricato, cancellato dopo il fingerprinting)
+/tmp_audio/
+*.wav
+*.mp3
+*.m4a
