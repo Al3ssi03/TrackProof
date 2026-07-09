@@ -13,10 +13,10 @@
 
 **Obiettivo:** ambiente pronto, nessuna feature ancora.
 
-- [ ] Repo con struttura backend (FastAPI) + cartella per script di test
-- [ ] Postgres locale/cloud con estensione pgvector abilitata
-- [ ] Schema DB da Architettura-tecnica-v1.md sezione 2 (solo le tabelle necessarie per Fase 1: `tracks`, `track_fingerprints`, `scanned_videos`, `video_fingerprint_windows`, `detections` — le altre tabelle si aggiungono quando servono, non subito)
-- [ ] `pyacoustid` installato e funzionante (test: fingerprint di un file audio locale)
+- [x] Repo con struttura backend (FastAPI) + cartella per script di test
+- [x] Postgres locale/cloud con estensione pgvector abilitata (docker-compose, immagine `pgvector/pgvector:pg17`)
+- [x] Schema DB da Architettura-tecnica-v1.md sezione 2 (solo le tabelle necessarie per Fase 1: `tracks`, `track_fingerprints`, `scanned_videos`, `video_fingerprint_windows`, `detections` — le altre tabelle si aggiungono quando servono, non subito; decisioni su FK differite in Architettura-tecnica-v1.md sezione 2.3)
+- [x] `pyacoustid` installato e funzionante (test: fingerprint di un file audio locale; richiede `fpcalc` a livello di sistema, vedi README)
 
 **Criterio di completamento:** si riesce a generare un fingerprint Chromaprint da un file audio locale e salvarlo in DB.
 

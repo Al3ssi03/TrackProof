@@ -138,6 +138,14 @@ CREATE TABLE notifications (
 - `audio_deleted_at` su `tracks` implementa la mitigazione del rischio leak (PRD, Rischi di prodotto): il file audio grezzo può essere cancellato dopo l'estrazione del fingerprint, mantenendo solo il fingerprint (non reversibile in audio) — da decidere se farlo sempre o solo per `is_released = FALSE`
 - `review_status` e `reviewed_by` gestiscono sia il flusso v1 (reviewer interno) sia v2 (self-confirm) senza cambiare schema, solo cambiando chi scrive in quel campo
 
+### 2.3 Decisioni di migrazione prese in Fase 0
+
+La prima migration (`backend/migrations/001_tabelle_fase1.sql`) crea le sole tabelle necessarie alla Fase 1 del piano — `tracks`, `track_fingerprints`, `scanned_videos`, `video_fingerprint_windows`, `detections` — e risolve tre punti che lo schema in 2.1 lasciava aperti:
+
+1. **`tracks.artist_id` esiste ma senza FK verso `artists`.** `artists` entra in Fase 5 del piano (auth/tier): crearla prima del gate di Fase 1.1 sarebbe schema morto. La colonna c'è già, quindi il codice non cambia quando arriverà la FK, che si aggiunge nella migration di Fase 5 con `ALTER TABLE tracks ADD CONSTRAINT ... FOREIGN KEY` — non distruttivo. Fino ad allora `artist_id` resta NULL (i brani di test interni non hanno artista).
+2. **`detections.dj_entity_id` / `venue_entity_id` esistono ma senza FK verso `entities`.** Stesso criterio: `entities` entra in Fase 3 (enrichment). La scelta risolve anche un difetto del SQL in 2.1, dove `detections` referenzia `entities(id)` ma `entities` è dichiarata dopo: eseguito nell'ordine scritto, quel SQL fallisce. Chi scrive la migration di Fase 3 deve creare `entities` e poi aggiungere le due FK a `detections` con `ALTER TABLE`.
+3. **`fingerprint_method` ed `embedding VECTOR(512)` sono creati da subito**, anche se la v1 usa solo Chromaprint, come previsto in 2.2: assorbono un eventuale passaggio a embedding (esito del gate di Fase 1.1) senza migration distruttiva. Per questo pgvector è abilitato nella migration 001 (`CREATE EXTENSION IF NOT EXISTS vector`), prima di qualunque uso reale.
+
 ---
 
 ## 3. Pipeline DETECT — passo per passo

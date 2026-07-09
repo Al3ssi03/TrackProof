@@ -2,7 +2,7 @@
 -- Scostamenti deliberati dal documento (motivati in sezione 2.3):
 --   * tracks.artist_id senza FK: artists arriva in Fase 5 del piano.
 --   * detections.dj_entity_id / venue_entity_id senza FK: entities arriva in Fase 3.
--- Le colonne esistono già, i vincoli si aggiungono con le rispective tabelle.
+-- Le colonne esistono già, i vincoli si aggiungono con le rispettive tabelle.
 
 -- pgvector abilitato da subito: assorbe l'eventuale passaggio a embedding
 -- (CLAP/OpenL3) senza migration distruttiva.
