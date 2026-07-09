@@ -1,9 +1,66 @@
 import math
+import os
 import struct
 import wave
 from pathlib import Path
 
+import psycopg
 import pytest
+from psycopg import conninfo
+
+from app.migrations import apply_migrations
+
+TEST_DATABASE_URL = os.environ.get(
+    "TRACKPROOF_TEST_DATABASE_URL",
+    "postgresql://trackproof:trackproof@localhost:5432/trackproof_test",
+)
+
+TABELLE_FASE_1 = (
+    "tracks",
+    "track_fingerprints",
+    "scanned_videos",
+    "video_fingerprint_windows",
+    "detections",
+)
+
+
+@pytest.fixture(scope="session")
+def test_db_url() -> str:
+    """Crea il database di test se manca e restituisce il suo URL."""
+    params = conninfo.conninfo_to_dict(TEST_DATABASE_URL)
+    dbname = params["dbname"]
+    admin_url = conninfo.make_conninfo(**{**params, "dbname": "postgres"})
+    try:
+        with psycopg.connect(admin_url, autocommit=True) as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM pg_database WHERE datname = %s", (dbname,)
+            ).fetchone()
+            if not exists:
+                conn.execute(f'CREATE DATABASE "{dbname}"')
+    except psycopg.OperationalError as exc:
+        pytest.fail(
+            f"Postgres non raggiungibile ({exc}).\n"
+            "Avvia il database locale con: docker compose up -d"
+        )
+    return TEST_DATABASE_URL
+
+
+@pytest.fixture(scope="session")
+def migrated_db(test_db_url: str) -> str:
+    """URL del database di test con tutte le migration applicate."""
+    with psycopg.connect(test_db_url) as conn:
+        apply_migrations(conn)
+    return test_db_url
+
+
+@pytest.fixture()
+def db_conn(migrated_db: str):
+    """Connessione al DB di test, con pulizia delle tabelle a fine test."""
+    with psycopg.connect(migrated_db) as conn:
+        yield conn
+        conn.rollback()
+        with conn.transaction():
+            conn.execute(f"TRUNCATE {', '.join(TABELLE_FASE_1)} CASCADE")
 
 
 @pytest.fixture(scope="session")
